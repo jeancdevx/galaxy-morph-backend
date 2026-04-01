@@ -116,6 +116,26 @@ services:
     networks:
       - galaxy-net
 
+  kafka-init:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: galaxy-kafka-init
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    command: >
+      bash -c "
+      echo 'Waited for Kafka to be healthy...' &&
+      kafka-topics --create --if-not-exists --topic galaxy.ingestion --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 3 &&
+      kafka-topics --create --if-not-exists --topic galaxy.results --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 3 &&
+      echo 'Kafka topics successfully initialized!'
+      "
+    networks:
+      - galaxy-net
+
   spark-master:
     image: apache/spark:3.5.1
     container_name: galaxy-spark-master
@@ -176,6 +196,8 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
     networks:
       - galaxy-net
 
@@ -198,7 +220,10 @@ services:
     volumes:
       - ../galaxy-morph-ml/models/checkpoints/best_model.pt:/opt/spark/models/best_model.pt:ro
     depends_on:
-      - spark-master
+      spark-master:
+        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
     networks:
       - galaxy-net
 
