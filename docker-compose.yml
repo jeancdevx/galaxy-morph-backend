@@ -1,0 +1,212 @@
+services:
+  kafka-1:
+    image: confluentinc/cp-kafka:7.7.8
+    container_name: galaxy-kafka-1
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-1:9092,EXTERNAL://localhost:29092'
+      CLUSTER_ID: 'galaxy-morph-cluster-001'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+    volumes:
+      - kafka-1-data:/var/lib/kafka/data
+    networks:
+      - galaxy-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.7.8
+    container_name: galaxy-kafka-2
+    ports:
+      - "29093:29093"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-2:9092,EXTERNAL://localhost:29093'
+      CLUSTER_ID: 'galaxy-morph-cluster-001'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+    volumes:
+      - kafka-2-data:/var/lib/kafka/data
+    networks:
+      - galaxy-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.7.8
+    container_name: galaxy-kafka-3
+    ports:
+      - "29094:29094"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-3:9092,EXTERNAL://localhost:29094'
+      CLUSTER_ID: 'galaxy-morph-cluster-001'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+    volumes:
+      - kafka-3-data:/var/lib/kafka/data
+    networks:
+      - galaxy-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: galaxy-kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'galaxy-morph'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - galaxy-net
+
+  spark-master:
+    image: apache/spark:3.5.1
+    container_name: galaxy-spark-master
+    command: bash -c "/opt/spark/sbin/start-master.sh && tail -f /opt/spark/logs/spark*.out"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      SPARK_MASTER_HOST: spark-master
+    networks:
+      - galaxy-net
+
+  spark-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    command: bash -c "/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /opt/spark/logs/spark*.out"
+    environment:
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 2g
+      # R2 credentials (passed to Spark workers for image download)
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      # Kafka
+      KAFKA_BROKERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
+      KAFKA_RESULTS_TOPIC: 'galaxy.results'
+      # Model
+      MODEL_PATH: '/opt/spark/models/best_model.pt'
+    volumes:
+      - ../galaxy-morph-ml/models/checkpoints/best_model.pt:/opt/spark/models/best_model.pt:ro
+    depends_on:
+      - spark-master
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - galaxy-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: galaxy-api
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      API_PORT: 3001
+      KAFKA_BROKERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - galaxy-net
+
+  spark-driver:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    container_name: galaxy-spark-driver
+    command: >
+      bash -c "/opt/spark/bin/spark-submit --conf spark.jars.ivy=/tmp/.ivy --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 --master spark://spark-master:7077 /opt/spark/app/main_streaming.py"
+    environment:
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      KAFKA_BROKERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
+      KAFKA_RESULTS_TOPIC: 'galaxy.results'
+      MODEL_PATH: '/opt/spark/models/best_model.pt'
+    volumes:
+      - ../galaxy-morph-ml/models/checkpoints/best_model.pt:/opt/spark/models/best_model.pt:ro
+    depends_on:
+      - spark-master
+    networks:
+      - galaxy-net
+
+volumes:
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:
+
+networks:
+  galaxy-net:
+    driver: bridge

@@ -1,0 +1,27 @@
+# FROM apache/spark:4.0.2-scala2.13-java17-python3-r-ubuntu
+FROM apache/spark:3.5.1
+
+USER root
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir \
+    typing-extensions==4.8.0 \
+    torch==2.4.1 torchvision==0.19.1 \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+
+RUN pip3 install --no-cache-dir \
+    boto3>=1.35.0 \
+    kafka-python-ng>=2.2.0 \
+    Pillow>=10.0
+
+COPY spark/ /opt/spark/app/
+ENV PYTHONPATH=/opt/spark/app
+RUN chown -R spark:spark /opt/spark/app
+
+WORKDIR /opt/spark/app
+
+USER spark
