@@ -1,0 +1,242 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: galaxy-morph-api
+meta:
+  id: wrk_99b6ae2c281944719936a0121ac34444
+  created: 1774993586121
+  modified: 1774993586121
+  description: ""
+collection:
+  - url: "{{ _.base_url }}/uploads/presigned"
+    name: "1. Uploads: Pedir URLs Firmadas a R2"
+    meta:
+      id: req_6a2d612db1a0473a88352660773c4130
+      created: 1774993585199
+      modified: 1774993585199
+      isPrivate: false
+      description: ""
+      sortKey: 0
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"images": [
+        		{
+        			"filename": "galaxia_espiral.jpg",
+        			"contentType": "image/jpeg"
+        		}
+        	]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/classifications"
+    name: "2. Jobs: Iniciar Clasificación mediante Kafka y Spark"
+    meta:
+      id: req_ecfec76c8bc54885b4485312c1097a5f
+      created: 1774993652859
+      modified: 1775014331485
+      isPrivate: false
+      description: ""
+      sortKey: 100
+    method: POST
+    body:
+      mimeType: application/json
+      text: >-
+        {
+        	"clientId": "insomnia-client-001",
+        	"images": [
+          	{
+        			"key": "galaxies/36882d6d-b524-4189-9084-c0c0358a5f04/galaxia_espiral.jpg"
+        		}
+        	]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/classifications/5bfadc31-9a55-4719-ae15-89e870530956"
+    name: "3. Jobs: Consultar Estado de un Job"
+    meta:
+      id: req_d84a2866e328496b87dc594515748d15
+      created: 1774993685340
+      modified: 1775013468410
+      isPrivate: false
+      description: ""
+      sortKey: 200
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/classifications"
+    name: "4. Trabajos: Listar todos (Historial)"
+    meta:
+      id: req_9b453fd7c0514278ad4ee3161f7b37d0
+      created: 1774993710252
+      modified: 1774993736526
+      isPrivate: false
+      description: ""
+      sortKey: 300
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: https://galaxy-morph-images.24f72ea794903c54e7c8ac725ddb76ee.r2.cloudflarestorage.com/galaxies/36882d6d-b524-4189-9084-c0c0358a5f04/galaxia_espiral.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=5988829a22bb046350d850e32188f89e%2F20260401%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260401T033127Z&X-Amz-Expires=3600&X-Amz-Signature=cc00f4909800893a1ccf44fae64303a8d8cb8da4e1ca85398b6c674ce7e52565&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
+    name: "Uploads: Subir imagen a R2"
+    meta:
+      id: req_a72c9f5914c7401b93dcca1b2476adaa
+      created: 1774993741249
+      modified: 1775014294365
+      isPrivate: false
+      description: ""
+      sortKey: 50
+    method: PUT
+    body:
+      mimeType: application/octet-stream
+      fileName: /home/jeancdevx/Downloads/271076.jpg
+    headers:
+      - name: Content-Type
+        value: image/jpeg
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/classifications"
+    name: "2. Jobs: Iniciar Clasificación mediante Kafka y Spark"
+    meta:
+      id: req_d2c48480cd1b4e909b8aa0f596004110
+      created: 1775013616731
+      modified: 1775013621370
+      isPrivate: false
+      description: ""
+      sortKey: 150
+    method: POST
+    body:
+      mimeType: application/json
+      text: >-
+        {
+        	"clientId": "insomnia-client-002",
+        	"images": [
+          	{
+        			"key": "galaxies/54017c94-5ac5-45ba-ab97-8e1f8b2d0782/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/54017c94-5ac5-45ba-ab97-8e1f8b2d0782/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/54017c94-5ac5-45ba-ab97-8e1f8b2d0782/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/54017c94-5ac5-45ba-ab97-8e1f8b2d0782/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/54017c94-5ac5-45ba-ab97-8e1f8b2d0782/galaxia_espiral.jpg"
+        		}
+        	]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.ws_base_url }}/?clientId=insomnia-client-001"
+    name: New Socket.IO Request
+    meta:
+      id: socketio-req_28e2989c14bf445ca6228dac0476df03
+      created: 1775014684495
+      modified: 1775014821216
+      description: ""
+      sortKey: 175
+    settings:
+      encodeUrl: true
+      cookies:
+        store: true
+        send: true
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0
+        description: ""
+        disabled: false
+    eventListeners:
+      - id: socketIO-event_51396e66a3dd4ca0a86350804d2587df
+        eventName: classification:result
+        desc: ""
+        isOpen: true
+      - id: socketIO-event_c75866ad2d5a41249340fe45c0814214
+        eventName: classification:error
+        desc: ""
+        isOpen: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_03372d2b1873c90a3db6149fc9a410d4a3c9617d
+    created: 1774993631331
+    modified: 1774993631331
+environments:
+  name: Base Environment
+  meta:
+    id: env_96a4ff3d623043bf89756c8270411f58
+    created: 1774993585199
+    modified: 1775014785838
+    isPrivate: false
+  data:
+    base_url: http://localhost:3001/api
+    ws_base_url: http://localhost:3001
