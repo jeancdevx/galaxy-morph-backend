@@ -1,98 +1,83 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🌌 Galaxy Morph Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Un sistema distribuido en tiempo real, orientado a eventos (Event-Driven), diseñado para la clasificación de morfología de galaxias utilizando Deep Learning (ResNet50).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Acoplado a una arquitectura de nivel empresarial, este backend separa completamente la ingesta web del procesamiento pesado de Machine Learning utilizando **Apache Kafka** y **Apache Spark**. ¡Cero bloqueos, máxima escalabilidad!
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🏗️ Arquitectura y Flujo de Datos
 
-## Project setup
+Este proyecto **no procesa** las imágenes en el hilo principal de la API. Todo fluye de manera asíncrona:
 
-```bash
-$ pnpm install
-```
+1. **Upload Desacoplado (S3/R2):** La API de NestJS firma criptográficamente un "Presigned URL" para que el cliente web (frontend) suba la foto directamente a Cloudflare R2, ahorrando ancho de banda del servidor.
+2. **Ingesta Orientada a Eventos:** Una vez subida la imagen, la API dispara un evento (Job) hacia el topic `galaxy.ingestion` de **Apache Kafka**. La API responde al usuario en 10 milisegundos.
+3. **Cómputo Distribuido (Spark + PyTorch):** Un clúster estandarizado de **Apache Spark** (Master + Workers) monitorea Kafka ininterrumpidamente. Un worker libre descarga la imagen de R2 y ejecuta la inferencia con la red neuronal (ResNet50).
+4. **Respuesta Asíncrona:** Spark publica el resultado de las probabilidades de clasificación en el topic `galaxy.results`.
+5. **Tiempo Real (WebSockets):** La API de NestJS, actuando como Consumer de Kafka, recibe el veredicto y mediante **Socket.IO** lanza una notificación push en vivo al cliente web conectado.
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+## 🔌 Servicios y Puertos Expuestos
 
-# watch mode
-$ pnpm run start:dev
+Al levantar el entorno con Docker Compose, tendrás acceso a los siguientes puertos vitales en tu máquina local:
 
-# production mode
-$ pnpm run start:prod
-```
+| Servicio | Puerto | Descripción |
+| :--- | :--- | :--- |
+| **NestJS API** | `3001` | Endpoints REST de la aplicación y Servidor Socket.IO |
+| **Spark Master UI** | `8080` | Panel de control de Apache Spark para ver estado y recursos de los workers |
+| **Kafka UI** | `8090` | Interfaz gráfica inmersiva para vigilar los *brokers*, *topics* y *messages* |
 
-## Run tests
+*(Los Spark Workers, el Contenedor Driver y los Brokers de Kafka corren en puertos internos de la red de Docker aislando las colisiones).*
+
+---
+
+## 🚀 Guía Rápida para Contribuidores (Open Source)
+
+Para replicar este proyecto, es imperativo entender que depende directamente del modelo de Machine Learning (`.pt`) alojado en un repositorio especial hermano. Sigue estos pasos exactos para simular el entorno distribuido localmente.
+
+### 1. Clonar ambos repositorios unidos
+Para que la magia de los *"Docker Volume Bind Mounts"* ocurra y Spark pueda importar el modelo de IA hacia sí mismo (ahorrándote re-compilaciones), **ambos proyectos deben vivir en la misma carpeta padre**:
 
 ```bash
-# unit tests
-$ pnpm run test
+# Crear tu directorio maestro de galaxias
+mkdir galaxy-morph-workspace && cd galaxy-morph-workspace
 
-# e2e tests
-$ pnpm run test:e2e
+# Clonar primero el proyecto de Machine Learning (¡El modelo pre-entrenado!)
+git clone https://github.com/jeancdevx/galaxy-morph-ml
 
-# test coverage
-$ pnpm run test:cov
+# Clonar este Backend
+git clone https://github.com/jeancdevx/galaxy-morph-backend
 ```
 
-## Deployment
+### 2. Preparar el Modelo Parametrizado (ML)
+Asegúrate de seguir las instrucciones del repositorio [galaxy-morph-ml](https://github.com/jeancdevx/galaxy-morph-ml) para descargar o entrenar el modelo de PyTorch. 
+El archivo físico `.pt` originado en ese proyecto, **debe existir materialmente** en esta ruta relativa exacta:
+`../galaxy-morph-ml/models/checkpoints/best_model.pt`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Variables de Entorno (Credenciales)
+Entra a la carpeta de este backend y crea tu archivo `.env` base:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+cd galaxy-morph-backend
+cp .env.example .env
+```
+*(Asegúrate de rellenar tus credenciales de Cloudflare R2 u Object Storage S3 Compatible directamente en el nuevo archivo `.env`).*
+
+### 4. Orquestar y Levantar el Clúster
+La infraestructura de este repositorio está programada 100% como Código (IaC).
+No tendrás que crear repositorios asíncronos a mano; un contenedor automatizado (`kafka-init`) inyectará y particionará *(partitions=3)* los topics esenciales antes de que Spark siquiera despierte para evitar colisiones.
+
+Levanta todo el sistema escalando de manera inteligente poder computacional a **3 trabajadores paralelos**:
+
+```bash
+docker compose up -d --scale spark-worker=3
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Podrás ver el estado del conductor principal asíncrono con:
+```bash
+docker compose logs -f spark-driver
+```
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 5. Probar Tu IA
+¡Tu redacción espacial está lista! Puedes usar el archivo `Insomnia_2026-03-31.yaml` incluido en la raíz de este repositorio para importar los endpoints directo a Insomnia / Postman y ver el clúster descargar desde Cloudflare y pensar en paralelo en menos de 5 segundos.
