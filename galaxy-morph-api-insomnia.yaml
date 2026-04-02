@@ -44,7 +44,7 @@ collection:
     meta:
       id: req_ecfec76c8bc54885b4485312c1097a5f
       created: 1774993652859
-      modified: 1775014331485
+      modified: 1775096330625
       isPrivate: false
       description: ""
       sortKey: 100
@@ -56,7 +56,28 @@ collection:
         	"clientId": "insomnia-client-001",
         	"images": [
           	{
-        			"key": "galaxies/36882d6d-b524-4189-9084-c0c0358a5f04/galaxia_espiral.jpg"
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
+        		},
+        		{
+        			"key": "galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg"
         		}
         	]
         }
@@ -121,12 +142,12 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: https://galaxy-morph-images.24f72ea794903c54e7c8ac725ddb76ee.r2.cloudflarestorage.com/galaxies/36882d6d-b524-4189-9084-c0c0358a5f04/galaxia_espiral.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=5988829a22bb046350d850e32188f89e%2F20260401%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260401T033127Z&X-Amz-Expires=3600&X-Amz-Signature=cc00f4909800893a1ccf44fae64303a8d8cb8da4e1ca85398b6c674ce7e52565&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
+  - url: https://galaxy-morph-images.24f72ea794903c54e7c8ac725ddb76ee.r2.cloudflarestorage.com/galaxies/66cbab49-b705-4e33-ba2f-ff01cbe03d69/galaxia_espiral.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=5988829a22bb046350d850e32188f89e%2F20260402%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260402T021707Z&X-Amz-Expires=3600&X-Amz-Signature=51509cf9c26c0078318a51c5ebc12c67dc019158ec9cd33b0c1814ad59a918d7&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
     name: "Uploads: Subir imagen a R2"
     meta:
       id: req_a72c9f5914c7401b93dcca1b2476adaa
       created: 1774993741249
-      modified: 1775014294365
+      modified: 1775096251122
       isPrivate: false
       description: ""
       sortKey: 50
