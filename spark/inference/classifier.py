@@ -47,7 +47,14 @@ class GalaxyClassifier:
 
         # Load checkpoint
         checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
-        self.model.load_state_dict(checkpoint["model_state_dict"])
+        state_dict = checkpoint["model_state_dict"]
+
+        cleaned_state_dict = {}
+        for key, value in state_dict.items():
+            new_key = key.replace("module.", "", 1) if key.startswith("module.") else key
+            cleaned_state_dict[new_key] = value
+
+        self.model.load_state_dict(cleaned_state_dict)
         self.model.to(self.device)
         self.model.eval()
 
