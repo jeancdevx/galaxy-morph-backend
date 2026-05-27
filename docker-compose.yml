@@ -3,7 +3,7 @@ services:
     image: confluentinc/cp-kafka:7.7.8
     container_name: galaxy-kafka-1
     ports:
-      - "29092:29092"
+      - '29092:29092'
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -26,7 +26,13 @@ services:
     networks:
       - galaxy-net
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test:
+        [
+          'CMD',
+          'kafka-broker-api-versions',
+          '--bootstrap-server',
+          'localhost:9092',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -36,7 +42,7 @@ services:
     image: confluentinc/cp-kafka:7.7.8
     container_name: galaxy-kafka-2
     ports:
-      - "29093:29093"
+      - '29093:29093'
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -59,7 +65,13 @@ services:
     networks:
       - galaxy-net
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test:
+        [
+          'CMD',
+          'kafka-broker-api-versions',
+          '--bootstrap-server',
+          'localhost:9092',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -69,7 +81,7 @@ services:
     image: confluentinc/cp-kafka:7.7.8
     container_name: galaxy-kafka-3
     ports:
-      - "29094:29094"
+      - '29094:29094'
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -92,17 +104,23 @@ services:
     networks:
       - galaxy-net
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test:
+        [
+          'CMD',
+          'kafka-broker-api-versions',
+          '--bootstrap-server',
+          'localhost:9092',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.7.2
     container_name: galaxy-kafka-ui
     ports:
-      - "8090:8080"
+      - '8090:8080'
     environment:
       KAFKA_CLUSTERS_0_NAME: 'galaxy-morph'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
@@ -141,8 +159,8 @@ services:
     container_name: galaxy-spark-master
     command: bash -c "/opt/spark/sbin/start-master.sh && tail -f /opt/spark/logs/spark*.out"
     ports:
-      - "8080:8080"
-      - "7077:7077"
+      - '8080:8080'
+      - '7077:7077'
     environment:
       SPARK_MASTER_HOST: spark-master
     networks:
@@ -166,9 +184,9 @@ services:
       KAFKA_BROKERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
       KAFKA_RESULTS_TOPIC: 'galaxy.results'
       # Model
-      MODEL_PATH: '/opt/spark/models/best_model.pt'
+      MODEL_PATH: '/opt/spark/models/best_model.pth'
     volumes:
-      - ../galaxy-morph-ml/models/checkpoints/best_model.pt:/opt/spark/models/best_model.pt:ro
+      - ${MODEL_FILE_PATH:-../galaxy-morph-ml/models/checkpoints/best_model.pth}:/opt/spark/models/best_model.pth:ro
     depends_on:
       - spark-master
       - kafka-1
@@ -183,7 +201,7 @@ services:
       dockerfile: Dockerfile.api
     container_name: galaxy-api
     ports:
-      - "3001:3001"
+      - '3001:3001'
     env_file:
       - .env
     environment:
@@ -216,9 +234,9 @@ services:
       R2_ENDPOINT: ${R2_ENDPOINT}
       KAFKA_BROKERS: 'kafka-1:9092,kafka-2:9092,kafka-3:9092'
       KAFKA_RESULTS_TOPIC: 'galaxy.results'
-      MODEL_PATH: '/opt/spark/models/best_model.pt'
+      MODEL_PATH: '/opt/spark/models/best_model.pth'
     volumes:
-      - ../galaxy-morph-ml/models/checkpoints/best_model.pt:/opt/spark/models/best_model.pt:ro
+      - ${MODEL_FILE_PATH:-../galaxy-morph-ml/models/checkpoints/best_model.pth}:/opt/spark/models/best_model.pth:ro
     depends_on:
       spark-master:
         condition: service_started
