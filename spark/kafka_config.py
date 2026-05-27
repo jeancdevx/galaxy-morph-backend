@@ -14,7 +14,7 @@ R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
 R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "galaxy-morph")
 
 # Model config
-MODEL_PATH = os.environ.get("MODEL_PATH", "/opt/spark/models/best_model.pt")
-NUM_CLASSES = 5
-CLASS_NAMES = ["Elliptical", "Spiral", "Barred_Spiral", "Edge_on", "Irregular_Merger"]
+MODEL_PATH = os.environ.get("MODEL_PATH", "/opt/spark/models/best_model.pth")
+NUM_CLASSES = 6
+CLASS_NAMES = ["Elliptical", "Lenticular", "Spiral", "Barred_Spiral", "Edge_on", "Irregular"]
 INPUT_SIZE = 224
