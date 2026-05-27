@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 
-from inference.model import GalaxyMorphResNet50
+from inference.model import GalaxyMorphMaxViT
 from inference.transforms import get_inference_transforms
 
 import sys
@@ -40,14 +40,14 @@ class GalaxyClassifier:
         self.transform = get_inference_transforms(INPUT_SIZE)
 
         # Create model architecture (same as training)
-        self.model = GalaxyMorphResNet50(
-            num_classes=NUM_CLASSES,
-            pretrained=False,  # We load our own weights
-        )
+        self.model = GalaxyMorphMaxViT(num_classes=NUM_CLASSES)
 
-        # Load checkpoint
+        # Load checkpoint — supports both full training state and bare state_dict
         checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
-        state_dict = checkpoint["model_state_dict"]
+        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+            state_dict = checkpoint["model_state_dict"]
+        else:
+            state_dict = checkpoint
 
         cleaned_state_dict = {}
         for key, value in state_dict.items():

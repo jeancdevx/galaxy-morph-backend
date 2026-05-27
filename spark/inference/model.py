@@ -1,54 +1,30 @@
-"""ResNet50 model architecture for galaxy morphology classification.
+"""MaxViT-T model architecture for galaxy morphology classification.
 
-This is a copy of the model from galaxy-morph-ml/src/models/resnet.py.
-Spark workers need their own copy since they don't have access to the
-ML project's source tree.
+Uses torchvision's MaxViT-T implementation, matching the checkpoint
+trained in galaxy-morph-ml.
 """
 
-import torch
 import torch.nn as nn
-from torchvision.models import resnet50, ResNet50_Weights
+from torchvision.models import maxvit_t
 
 
-class GalaxyMorphResNet50(nn.Module):
-    """ResNet50 backbone with custom head for 5-class galaxy morphology.
+def GalaxyMorphMaxViT(num_classes: int = 6):
+    """Return a MaxViT-T model configured for galaxy morphology classification.
 
-    Architecture:
-    - ResNet50 pretrained backbone
-    - Global Average Pooling
-    - Dropout(0.5) → Linear(2048, num_classes)
+    Architecture (MaxViT-T):
+    - Stem: Conv3×3(stride 2) + Conv3×3
+    - 4 stages of MaxViT blocks (MBConv + Window Att. + Grid Att.)
+    - AdaptiveAvgPool2d → Flatten → LayerNorm → Linear(512→512) → Tanh → Linear(512→num_classes)
+
+    Args:
+        num_classes: Number of output classes (default 6).
+
+    Returns:
+        torchvision MaxVit nn.Module instance.
     """
-
-    def __init__(
-        self,
-        num_classes: int = 5,
-        pretrained: bool = False,
-        dropout: float = 0.5,
-    ):
-        super().__init__()
-
-        self.num_classes = num_classes
-
-        # Load ResNet50 backbone
-        if pretrained:
-            weights = ResNet50_Weights.IMAGENET1K_V2
-            self.backbone = resnet50(weights=weights)
-        else:
-            self.backbone = resnet50(weights=None)
-
-        # Get number of features from backbone
-        num_features = self.backbone.fc.in_features
-
-        # Replace final layer
-        self.backbone.fc = nn.Identity()
-
-        # Custom classification head
-        self.head = nn.Sequential(
-            nn.Dropout(dropout),
-            nn.Linear(num_features, num_classes),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        backbone_out = self.backbone(x)
-        logits = self.head(backbone_out)
-        return logits
+    model = maxvit_t(num_classes=num_classes)
+    # torchvision 0.19.x builds classifier[5] with bias=False, but the
+    # checkpoint was trained with bias=True — patch before loading weights.
+    in_features = model.classifier[3].out_features
+    model.classifier[5] = nn.Linear(in_features, num_classes, bias=True)
+    return model
